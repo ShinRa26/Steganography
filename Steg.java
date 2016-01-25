@@ -22,11 +22,8 @@ public class Steg
 	Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
 	*/
 
-	public Steg()
-	{
-
-	}
-
+	public Steg(){}
+	
 	/**
 	A method for hiding a string in an uncompressed image file such as a .bmp or .png
 	You can assume a .bmp will be used
@@ -40,7 +37,7 @@ public class Steg
 	public String hideString(String payload, String cover_filename)
 	{
 		
-	return null;
+		return null;
 	} 
 	//TODO you must write this method
 	/**
@@ -51,7 +48,7 @@ public class Steg
 	*/
 	public String extractString(String stego_image)
 	{
-	return null;
+		return null;
 	}
 
 	//TODO you must write this method
