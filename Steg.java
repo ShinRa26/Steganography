@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.*;
+import javax.imageio.*;
+import java.awt.image.*;
 
 public class Steg 
 {
@@ -18,8 +20,8 @@ public class Steg
 	protected final int extBitsLength=64;
 
 	 
-	 /**
-	Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
+	/**
+	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
 	*/
 
 	public Steg(){}
@@ -79,6 +81,26 @@ public class Steg
 		return "";
 	}
 
+	/**
+	 * Method to get the image file and convert the image into an array of bytes
+	 * @param imageName the name of the image
+	 * @return the image represented as a byte array
+	 */
+	public byte[] convertImage(String imageName)
+	{	
+		try
+		{
+			BufferedImage img = ImageIO.read(new File(imageName));
+			
+			return null;
+		}
+		catch(IOException e)
+		{
+			System.out.println("No file");
+			return null;
+		}
+	}
+	
 	//TODO you must write this method
 	/**
 	 * This method swaps the least significant bit with a bit from the filereader
