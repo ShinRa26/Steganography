@@ -86,18 +86,24 @@ public class Steg
 	 * @param imageName the name of the image
 	 * @return the image represented as a byte array
 	 */
-	public byte[] convertImage(String imageName)
+	public int convertImage(String imageName)
 	{	
 		try
 		{
 			BufferedImage img = ImageIO.read(new File(imageName));
 			
-			return null;
+			int[][] pixel = new int[img.getWidth()][img.getHeight()];
+			for(int i = 0; i < img.getWidth(); i++)
+				for(int j = 0; j < img.getHeight(); j++)
+					pixel[i][j] = img.getRGB(i, j);
+			
+			//System.out.println(pixel[56][67]);
+			return 0;
 		}
 		catch(IOException e)
 		{
 			System.out.println("No file");
-			return null;
+			return 0;
 		}
 	}
 	
@@ -111,5 +117,16 @@ public class Steg
 	public int swapLsb(int bitToHide,int byt)
 	{		
 		return 0;
+	}
+	
+	/**
+	 * Main Method to call the program 
+	 * @param args the arguments
+	 */
+	public static void main(String[] args)
+	{
+		Steg s = new Steg();
+		s.convertImage("garrosh.bmp");
+
 	}
 }
