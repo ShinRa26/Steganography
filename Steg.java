@@ -22,9 +22,10 @@ public class Steg
 	/**
 	 * Instance variable to hold the image.
 	 */
-	private BufferedImage img; 
+	private byte[] img; 
 	
-	private final int START_POS = 12;
+	private final int START_POS = 55;
+	
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
 	*/
@@ -45,17 +46,18 @@ public class Steg
 	{
 		int pixelsNeeded = pixelsNeededString(payload);
 		
-		char[] payloadBytes = payload.toCharArray();
+		byte[] payloadBytes = payload.getBytes();
 		
-		int[][] pixelMap = getPixels(cover_filename);
+		byte[] imgBytes = readImage(cover_filename);
 		
-		for(int i = START_POS; i < START_POS+pixelsNeeded; i++)
+		for(int i = START_POS; i < START_POS + (pixelsNeeded*4); i++)
 		{
-			int[] convertPixel = convertPixel(pixelMap[i][START_POS]);
+			
 		}
 		
 		return "stego_" + cover_filename;
 	} 
+	
 	//TODO you must write this method
 	/**
 	The extractString method should extract a string which has been hidden in the stegoimage
@@ -101,42 +103,22 @@ public class Steg
 	 * @param imageName the name of the image
 	 * @return the image represented as an integer array
 	 */
-	public int[][] getPixels(String imageName)
+	public byte[] readImage(String imageName)
 	{	
 		try
 		{
-			img = ImageIO.read(new File(imageName));
-			int[][] pixel = new int[img.getWidth()][img.getHeight()];
-			for(int i = 0; i < img.getWidth(); i++)
-				for(int j = 0; j < img.getHeight(); j++)
-					pixel[i][j] = img.getRGB(i, j);
-
-			return pixel;
+			File image = new File(imageName);
+			FileInputStream in = new FileInputStream(image);
+			img = new byte[(int) image.length()];
+			in.read(img);
+			in.close();
+			return img;
 		}
 		catch(IOException e)
 		{
 			System.out.println("No file");
 			return null;
 		}
-	}
-	
-	/**
-	 * Method to convert a pixel into an array of bytes
-	 * @param i the pixel integer
-	 * @return the byte array containing the RGB values in bytes
-	 */
-	public int[] convertPixel(int i)
-	{
-		int alpha, red, green, blue;
-		
-		alpha = ((i & 0xFF000000) >>> 24); //Alpha (Not needed...?)
-		red = ((i & 0x00FF0000) >>> 16); //Red
-		green = ((i & 0x0000FF00) >>> 8); //Green
-		blue = (i & 0x000000FF); //Blue
-		
-		int[] pixelInBytes = {red, green, blue};
-		
-		return pixelInBytes;
 	}
 	
 	//TODO you must write this method
@@ -184,7 +166,7 @@ public class Steg
 		
 		//Converting the binary string into individual bits
 		char[] bitLength = builder.toCharArray();
-		int bitsPerPixel = 3;
+		int bitsPerPixel = 4;
 		int numBits = bitLength.length;
 		
 		//if(numBits % bitsPerPixel > img.getHeight() || numBits % bitsPerPixel > img.getWidth())
@@ -204,12 +186,6 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		String payload = "This is a message.";
-		byte[] pBytes = payload.getBytes();
-		for(int i = 0; i < pBytes.length; i++)
-			System.out.println(pBytes[i]);
-		System.err.println("\n" + s.pixelsNeededString(payload));
-		
 		
 	}
 }
