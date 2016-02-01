@@ -24,6 +24,7 @@ public class Steg
 	 */
 	private BufferedImage img; 
 	
+	private final int START_POS = 12;
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
 	*/
@@ -42,12 +43,18 @@ public class Steg
 	//TODO you must write this method
 	public String hideString(String payload, String cover_filename)
 	{
-		char[] payloadInAscii = payload.toCharArray();
+		int pixelsNeeded = pixelsNeededString(payload);
+		
+		char[] payloadBytes = payload.toCharArray();
+		
 		int[][] pixelMap = getPixels(cover_filename);
 		
+		for(int i = START_POS; i < START_POS+pixelsNeeded; i++)
+		{
+			int[] convertPixel = convertPixel(pixelMap[i][START_POS]);
+		}
 		
-		
-		return "Stego_" + cover_filename;
+		return "stego_" + cover_filename;
 	} 
 	//TODO you must write this method
 	/**
@@ -116,18 +123,18 @@ public class Steg
 	/**
 	 * Method to convert a pixel into an array of bytes
 	 * @param i the pixel integer
-	 * @return the byte array containing the values of the RGB values in bytes
+	 * @return the byte array containing the RGB values in bytes
 	 */
-	public byte[] convertPixel(int i)
+	public int[] convertPixel(int i)
 	{
-		byte alpha, red, green, blue;
+		int alpha, red, green, blue;
 		
-		alpha = (byte)((i >>> 24)); //Alpha (Not needed...?)
-		red = (byte)((i >>> 16)); //Red
-		green = (byte)((i >>> 8)); //Green
-		blue = (byte)(i); //Blue
+		alpha = ((i & 0xFF000000) >>> 24); //Alpha (Not needed...?)
+		red = ((i & 0x00FF0000) >>> 16); //Red
+		green = ((i & 0x0000FF00) >>> 8); //Green
+		blue = (i & 0x000000FF); //Blue
 		
-		byte[] pixelInBytes = {red, green, blue};
+		int[] pixelInBytes = {red, green, blue};
 		
 		return pixelInBytes;
 	}
@@ -140,8 +147,15 @@ public class Steg
 	 * @return the altered byte
 	 */
 	public int swapLsb(int bitToHide,int byt)
-	{		
-		return 0;
+	{	
+		if(bitToHide != (byt&0x1))
+		{
+			if(bitToHide == 0)
+				byt&=~0x1;
+			else
+				byt |= 0x1;
+		}
+		return byt;
 	}
 	
 	/**
@@ -163,17 +177,19 @@ public class Steg
 	public int pixelsNeededString(String payload)
 	{
 		//Converting payload into a string of binary digits
-		char[] payloadChars = payload.toCharArray();
+		byte[] payloadBytes = payload.getBytes();
 		String builder = "";
-		for(int i = 0; i < payloadChars.length; i++)
-			builder += String.format("%8s", Integer.toBinaryString(payloadChars[i]).replace(' ', '0'));
+		for(int i = 0; i < payloadBytes.length; i++)
+			builder += String.format("%8s", Integer.toBinaryString(payloadBytes[i]).replace(' ', '0'));
 		
 		//Converting the binary string into individual bits
 		char[] bitLength = builder.toCharArray();
 		int bitsPerPixel = 3;
 		int numBits = bitLength.length;
 		
-		System.err.println(builder);
+		//if(numBits % bitsPerPixel > img.getHeight() || numBits % bitsPerPixel > img.getWidth())
+			//return 0;
+		//System.err.println(builder);
 		//Calculating the number of pixels needed
 		if(numBits % bitsPerPixel == 0)
 			return numBits/bitsPerPixel;
@@ -188,6 +204,12 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		System.out.println(s.pixelsNeededString("This is a message"));
+		String payload = "This is a message.";
+		byte[] pBytes = payload.getBytes();
+		for(int i = 0; i < pBytes.length; i++)
+			System.out.println(pBytes[i]);
+		System.err.println("\n" + s.pixelsNeededString(payload));
+		
+		
 	}
 }
