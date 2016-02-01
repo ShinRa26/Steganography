@@ -19,7 +19,11 @@ public class Steg
 	 */
 	protected final int extBitsLength=64;
 
-	 
+	/**
+	 * Instance variable to hold the image.
+	 */
+	private BufferedImage img; 
+	
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
 	*/
@@ -38,8 +42,12 @@ public class Steg
 	//TODO you must write this method
 	public String hideString(String payload, String cover_filename)
 	{
+		char[] payloadInAscii = payload.toCharArray();
+		int[][] pixelMap = getPixels(cover_filename);
 		
-		return null;
+		
+		
+		return "Stego_" + cover_filename;
 	} 
 	//TODO you must write this method
 	/**
@@ -77,34 +85,51 @@ public class Steg
 	*/
 	public String extractFile(String stego_image)
 	{
-
+	
 		return "";
 	}
 
 	/**
-	 * Method to get the image file and convert the image into an array of bytes
+	 * Method to get the image file and convert the image pixels into an array of integers
 	 * @param imageName the name of the image
-	 * @return the image represented as a byte array
+	 * @return the image represented as an integer array
 	 */
-	public int convertImage(String imageName)
+	public int[][] getPixels(String imageName)
 	{	
 		try
 		{
-			BufferedImage img = ImageIO.read(new File(imageName));
-			
+			img = ImageIO.read(new File(imageName));
 			int[][] pixel = new int[img.getWidth()][img.getHeight()];
 			for(int i = 0; i < img.getWidth(); i++)
 				for(int j = 0; j < img.getHeight(); j++)
 					pixel[i][j] = img.getRGB(i, j);
-			
-			//System.out.println(pixel[56][67]);
-			return 0;
+
+			return pixel;
 		}
 		catch(IOException e)
 		{
 			System.out.println("No file");
-			return 0;
+			return null;
 		}
+	}
+	
+	/**
+	 * Method to convert a pixel into an array of bytes
+	 * @param i the pixel integer
+	 * @return the byte array containing the values of the RGB values in bytes
+	 */
+	public byte[] convertPixel(int i)
+	{
+		byte alpha, red, green, blue;
+		
+		alpha = (byte)((i >>> 24)); //Alpha (Not needed...?)
+		red = (byte)((i >>> 16)); //Red
+		green = (byte)((i >>> 8)); //Green
+		blue = (byte)(i); //Blue
+		
+		byte[] pixelInBytes = {red, green, blue};
+		
+		return pixelInBytes;
 	}
 	
 	//TODO you must write this method
@@ -120,13 +145,49 @@ public class Steg
 	}
 	
 	/**
+	 * Method to get the LSB of a byte
+	 * @param byteIn the byte 
+	 * @return the least significant bit of the byte
+	 */
+	public int getLSB(int byteIn)
+	{
+		int lsb = byteIn&0x1;
+		return lsb;
+	}
+	
+	/**
+	 * Method to calculate the number of pixels needed for a string payload
+	 * @param payload the String containing the payload
+	 * @return the number of pixels needed to hide the payload
+	 */
+	public int pixelsNeededString(String payload)
+	{
+		//Converting payload into a string of binary digits
+		char[] payloadChars = payload.toCharArray();
+		String builder = "";
+		for(int i = 0; i < payloadChars.length; i++)
+			builder += String.format("%8s", Integer.toBinaryString(payloadChars[i]).replace(' ', '0'));
+		
+		//Converting the binary string into individual bits
+		char[] bitLength = builder.toCharArray();
+		int bitsPerPixel = 3;
+		int numBits = bitLength.length;
+		
+		System.err.println(builder);
+		//Calculating the number of pixels needed
+		if(numBits % bitsPerPixel == 0)
+			return numBits/bitsPerPixel;
+		else
+			return numBits/bitsPerPixel + 1;
+	}
+	
+	/**
 	 * Main Method to call the program 
 	 * @param args the arguments
 	 */
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		s.convertImage("garrosh.bmp");
-
+		System.out.println(s.pixelsNeededString("This is a message"));
 	}
 }
