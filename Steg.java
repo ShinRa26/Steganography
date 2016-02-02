@@ -24,7 +24,16 @@ public class Steg
 	 */
 	private byte[] img; 
 	
-	private final int START_POS = 55;
+	/**
+	 * Starting position for hiding the payload in the picture (Skips the header of the bmp)
+	 */
+	private final int START_POS = 54;
+	
+	/**
+	 * Instance variable to store the Image for output
+	 */
+	private BufferedImage imgOut;
+	
 	
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
@@ -47,15 +56,41 @@ public class Steg
 		int pixelsNeeded = pixelsNeededString(payload);
 		
 		byte[] payloadBytes = payload.getBytes();
-		
+		BitSet payloadBits = BitSet.valueOf(payloadBytes);
+				
 		byte[] imgBytes = readImage(cover_filename);
 		
-		for(int i = START_POS; i < START_POS + (pixelsNeeded*4); i++)
-		{
-			
-		}
+		int counter = 0;
 		
-		return "stego_" + cover_filename;
+		for(int i = START_POS; i < START_POS + (pixelsNeeded*3); i++)
+		{
+			int bit = 0;
+			
+			if(payloadBits.get(counter) == true)
+				bit = 1;
+			else
+				bit = 0;
+			
+			int newByte = swapLsb(bit, (int)imgBytes[i]);
+			
+			imgBytes[i] = (byte)newByte;
+			counter++;
+		}
+
+		String outputFileName = "stego_" + cover_filename;
+		
+		try
+		{
+			imgOut = ImageIO.read(new ByteArrayInputStream(imgBytes));
+			ImageIO.write(imgOut, "bmp", new File(outputFileName));
+		}
+		catch(IOException e)
+		{
+			return "Fail";
+		}
+
+		
+		return outputFileName;
 	} 
 	
 	//TODO you must write this method
@@ -67,6 +102,8 @@ public class Steg
 	*/
 	public String extractString(String stego_image)
 	{
+		byte[] stegPixels = readImage(stego_image);
+		
 		return null;
 	}
 
@@ -145,11 +182,12 @@ public class Steg
 	 * @param byteIn the byte 
 	 * @return the least significant bit of the byte
 	 */
-	public int getLSB(int byteIn)
+	public int getLSB(byte byteIn)
 	{
 		int lsb = byteIn&0x1;
 		return lsb;
 	}
+	
 	
 	/**
 	 * Method to calculate the number of pixels needed for a string payload
@@ -166,12 +204,9 @@ public class Steg
 		
 		//Converting the binary string into individual bits
 		char[] bitLength = builder.toCharArray();
-		int bitsPerPixel = 4;
+		int bitsPerPixel = 3;
 		int numBits = bitLength.length;
 		
-		//if(numBits % bitsPerPixel > img.getHeight() || numBits % bitsPerPixel > img.getWidth())
-			//return 0;
-		//System.err.println(builder);
 		//Calculating the number of pixels needed
 		if(numBits % bitsPerPixel == 0)
 			return numBits/bitsPerPixel;
@@ -186,6 +221,7 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		
+		String message = "This is a test message to hide in a bmp image";
+		s.hideString(message, "tiger.bmp");
 	}
 }
