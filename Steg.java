@@ -34,6 +34,10 @@ public class Steg
 	 */
 	private BufferedImage imgOut;
 	
+	/**
+	 * Variable to hold the number of pixels needed for the String operations
+	 */
+	private int stringPixelsNeeded;
 	
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
@@ -53,7 +57,7 @@ public class Steg
 	//TODO you must write this method
 	public String hideString(String payload, String cover_filename)
 	{
-		int pixelsNeeded = pixelsNeededString(payload);
+		pixelsNeededString(payload);
 		
 		byte[] payloadBytes = payload.getBytes();
 		BitSet payloadBits = BitSet.valueOf(payloadBytes);
@@ -62,7 +66,7 @@ public class Steg
 		
 		int counter = 0;
 		
-		for(int i = START_POS; i < START_POS + (pixelsNeeded*3); i++)
+		for(int i = START_POS; i < START_POS + (stringPixelsNeeded*3); i++)
 		{
 			int bit = 0;
 			
@@ -103,6 +107,7 @@ public class Steg
 	public String extractString(String stego_image)
 	{
 		byte[] stegPixels = readImage(stego_image);
+		List<Integer> pixBits = new ArrayList<Integer>();
 		
 		return null;
 	}
@@ -198,20 +203,22 @@ public class Steg
 	{
 		//Converting payload into a string of binary digits
 		byte[] payloadBytes = payload.getBytes();
-		String builder = "";
-		for(int i = 0; i < payloadBytes.length; i++)
-			builder += String.format("%8s", Integer.toBinaryString(payloadBytes[i]).replace(' ', '0'));
+		BitSet payloadBits = BitSet.valueOf(payloadBytes);
 		
-		//Converting the binary string into individual bits
-		char[] bitLength = builder.toCharArray();
 		int bitsPerPixel = 3;
-		int numBits = bitLength.length;
+		int numBits = payloadBits.length();
 		
 		//Calculating the number of pixels needed
 		if(numBits % bitsPerPixel == 0)
-			return numBits/bitsPerPixel;
+		{
+			stringPixelsNeeded = numBits/bitsPerPixel;
+			return stringPixelsNeeded;
+		}
 		else
-			return numBits/bitsPerPixel + 1;
+		{
+			stringPixelsNeeded = numBits/bitsPerPixel + 1;
+			return stringPixelsNeeded;
+		}
 	}
 	
 	/**
@@ -222,6 +229,7 @@ public class Steg
 	{
 		Steg s = new Steg();
 		String message = "This is a test message to hide in a bmp image";
-		s.hideString(message, "tiger.bmp");
+		String extracted = s.extractString("stego_tiger.bmp");
+		System.out.println(extracted);
 	}
 }
