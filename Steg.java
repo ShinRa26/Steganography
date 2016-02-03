@@ -107,13 +107,31 @@ public class Steg
 	public String extractString(String stego_image)
 	{
 		byte[] stegPixels = readImage(stego_image);
+		//System.out.println(stringPixelsNeeded);
+		int bit = 0;
+		int counter = 0;
+		BitSet stringBits = new BitSet();
 		
-		for(int i = START_POS; i < START_POS + (stringPixelsNeeded*3); i++)
+		for(int i = START_POS; i < START_POS + 360; i++)
 		{
+			if(stringBits.get(counter) == false)
+				bit = 0;
+			else
+				bit = 1;
 			
+			int getBit = getLSB(stegPixels[i]);
+			
+			if(bit != getBit)
+				stringBits.flip(counter);
+			
+			counter++;
 		}
-
-		return "";
+		
+		byte[] stringBytes = stringBits.toByteArray();
+		String extracted = new String(stringBytes);
+		
+		System.out.println(extracted);
+		return extracted;
 	}
 
 	//TODO you must write this method
