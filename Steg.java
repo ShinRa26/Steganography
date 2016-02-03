@@ -58,7 +58,7 @@ public class Steg
 	public String hideString(String payload, String cover_filename)
 	{
 		pixelsNeededString(payload);
-		
+		System.out.println(pixelsNeededString(payload));
 		byte[] payloadBytes = payload.getBytes();
 		BitSet payloadBits = BitSet.valueOf(payloadBytes);
 				
@@ -82,7 +82,7 @@ public class Steg
 		}
 
 		String outputFileName = "stego_" + cover_filename;
-		
+
 		try
 		{
 			imgOut = ImageIO.read(new ByteArrayInputStream(imgBytes));
@@ -107,9 +107,13 @@ public class Steg
 	public String extractString(String stego_image)
 	{
 		byte[] stegPixels = readImage(stego_image);
-		List<Integer> pixBits = new ArrayList<Integer>();
 		
-		return null;
+		for(int i = START_POS; i < START_POS + (stringPixelsNeeded*3); i++)
+		{
+			
+		}
+
+		return "";
 	}
 
 	//TODO you must write this method
@@ -228,8 +232,6 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		String message = "This is a test message to hide in a bmp image";
-		String extracted = s.extractString("stego_tiger.bmp");
-		System.out.println(extracted);
+		s.extractString("stego_tiger.bmp");
 	}
 }
