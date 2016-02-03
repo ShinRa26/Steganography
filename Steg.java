@@ -58,7 +58,7 @@ public class Steg
 	public String hideString(String payload, String cover_filename)
 	{
 		pixelsNeededString(payload);
-		System.out.println(pixelsNeededString(payload));
+		//System.out.println(pixelsNeededString(payload));
 		byte[] payloadBytes = payload.getBytes();
 		BitSet payloadBits = BitSet.valueOf(payloadBytes);
 				
