@@ -61,6 +61,8 @@ public class Steg
 		//System.out.println(pixelsNeededString(payload));
 		byte[] payloadBytes = payload.getBytes();
 		BitSet payloadBits = BitSet.valueOf(payloadBytes);
+		int payloadLength = payloadBits.length()&0x2;
+		System.out.println(payloadLength);
 				
 		byte[] imgBytes = readImage(cover_filename);
 		
@@ -145,6 +147,7 @@ public class Steg
 	*/
 	public String hideFile(String file_payload, String cover_image)
 	{
+		
 		return "";
 	}
 
@@ -250,6 +253,6 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		s.extractString("stego_tiger.bmp");
+		s.hideString("This is a message", "tiger.bmp");
 	}
 }
