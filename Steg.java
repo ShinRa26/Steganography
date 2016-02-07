@@ -33,11 +33,7 @@ public class Steg
 	 * Instance variable to store the Image for output
 	 */
 	private BufferedImage imgOut;
-	
-	/**
-	 * Variable to hold the number of pixels needed for the String operations
-	 */
-	private int stringPixelsNeeded;
+
 	
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
@@ -57,21 +53,55 @@ public class Steg
 	//TODO you must write this method
 	public String hideString(String payload, String cover_filename)
 	{
-		pixelsNeededString(payload);
-		//System.out.println(pixelsNeededString(payload));
+		//Byte array to store the payload
 		byte[] payloadBytes = payload.getBytes();
+		//Convert the payload into a BitSet, containing the bits of the payload
 		BitSet payloadBits = BitSet.valueOf(payloadBytes);
-		int payloadLength = payloadBits.length()&0x2;
-		System.out.println(payloadLength);
-				
+		
+		//Stores the length of the payload in bytes and converts it to an array of 4 bytes
+		int payloadLength = payloadBytes.length;
+		byte[] payloadSize = {
+				(byte)(payloadLength >>> 24),
+				(byte)(payloadLength >>> 16),
+				(byte)(payloadLength >>> 8),
+				(byte)(payloadLength)
+		};
+		
+		//Converts the 4 byte array into a BitSet, containing the bits of the integer
+		BitSet lengthBits = BitSet.valueOf(payloadSize);
+		
+		//Array to store the bytes of the image
 		byte[] imgBytes = readImage(cover_filename);
 		
+		//Variables to hold the value of the bit of the BitSets and counter for iterating through the BitSets
 		int counter = 0;
-		
-		for(int i = START_POS; i < START_POS + (stringPixelsNeeded*3); i++)
+		int bit = 0;
+		//Loop to hide the length of the payload in the first 4 bytes of the picture
+		int payloadStart = START_POS + sizeBitsLength;
+		for(int i = START_POS; i < START_POS + sizeBitsLength; i++)
 		{
-			int bit = 0;
+			//As BitSets hold the values of the bits as booleans, this converts the boolean to an integer value 
+			//(1 or 0 for true or false respectively)
+			if(lengthBits.get(counter) == true)
+				bit = 1;
+			else
+				bit = 0;
 			
+			//Stores the new byte value
+			int lengthByte = swapLsb(bit, (int)imgBytes[i]);
+			//Sets the byte in the image to the altered byte
+			imgBytes[i] = (byte)lengthByte;
+			//Increments the BitSet counter
+			counter++;
+		}
+		
+		//resets the counter for the BitSets
+		counter = 0;
+		//resets the bit for the bitset
+		bit = 0;
+		//Loop to hide the payload after the 4 length bytes
+		for(int i = payloadStart; i < payloadStart + payloadBits.length(); i++)
+		{
 			if(payloadBits.get(counter) == true)
 				bit = 1;
 			else
@@ -84,7 +114,8 @@ public class Steg
 		}
 
 		String outputFileName = "stego_" + cover_filename;
-
+		
+		//Writes out the altered image
 		try
 		{
 			imgOut = ImageIO.read(new ByteArrayInputStream(imgBytes));
@@ -99,7 +130,6 @@ public class Steg
 		return outputFileName;
 	} 
 	
-	//TODO you must write this method
 	/**
 	The extractString method should extract a string which has been hidden in the stegoimage
 	@param the name of the stego image 
@@ -108,13 +138,47 @@ public class Steg
 	*/
 	public String extractString(String stego_image)
 	{
+		//Array to store the bytes of the stego image
 		byte[] stegPixels = readImage(stego_image);
-		//System.out.println(stringPixelsNeeded);
+		
+		//Variables to hold the value of the bit of the BitSet and the counter for iterating through the BitSet
 		int bit = 0;
 		int counter = 0;
-		BitSet stringBits = new BitSet();
 		
-		for(int i = START_POS; i < START_POS + 360; i++)
+		//BitSets to hold the bits for the payload and the payload's size
+		BitSet stringBits = new BitSet();
+		BitSet lengthBits = new BitSet();
+		
+		//Loop for extracting the payload size from the first 4 bytes of the image
+		for(int i = START_POS; i < START_POS + sizeBitsLength; i++)
+		{
+			if(lengthBits.get(counter) == true)
+				bit = 1;
+			else
+				bit = 0;
+			
+			int getSizeBit = getLSB(stegPixels[i]);
+			if(bit != getSizeBit)
+				lengthBits.flip(counter);
+			
+			counter++;
+		}
+		
+		//Array to convert the bits of the payloadSize BitSet into an array of 4 bytes
+		byte[] lengthBytes = lengthBits.toByteArray();
+		//Converts the 4 byte array into a value, giving the length of the payload in bytes
+		int payloadLength = ((lengthBytes[0] & 0xFF) << 24) | ((lengthBytes[1] & 0xFF) << 16) |
+		          ((lengthBytes[2] & 0xFF) << 8)  | (lengthBytes[3] & 0xFF);
+		
+		
+		System.out.println(payloadLength);
+		//Stores teh start point for the extraction to begin
+		int extractStart = START_POS + sizeBitsLength;
+		counter = 0; //Restarts the counter for the bitset
+		bit = 0; //resets the value of the bit
+		
+		//Loop for extracting the hidden string
+		for(int i = extractStart; i < extractStart + (payloadLength*byteLength-1); i++)
 		{
 			if(stringBits.get(counter) == false)
 				bit = 0;
@@ -129,7 +193,9 @@ public class Steg
 			counter++;
 		}
 		
+		//Converts the BitSet containing the payload bits into an array of bytes
 		byte[] stringBytes = stringBits.toByteArray();
+		//Converts the byte array containing the payload back into a string
 		String extracted = new String(stringBytes);
 		
 		System.out.println(extracted);
@@ -217,34 +283,7 @@ public class Steg
 		int lsb = byteIn&0x1;
 		return lsb;
 	}
-	
-	
-	/**
-	 * Method to calculate the number of pixels needed for a string payload
-	 * @param payload the String containing the payload
-	 * @return the number of pixels needed to hide the payload
-	 */
-	public int pixelsNeededString(String payload)
-	{
-		//Converting payload into a string of binary digits
-		byte[] payloadBytes = payload.getBytes();
-		BitSet payloadBits = BitSet.valueOf(payloadBytes);
-		
-		int bitsPerPixel = 3;
-		int numBits = payloadBits.length();
-		
-		//Calculating the number of pixels needed
-		if(numBits % bitsPerPixel == 0)
-		{
-			stringPixelsNeeded = numBits/bitsPerPixel;
-			return stringPixelsNeeded;
-		}
-		else
-		{
-			stringPixelsNeeded = numBits/bitsPerPixel + 1;
-			return stringPixelsNeeded;
-		}
-	}
+
 	
 	/**
 	 * Main Method to call the program 
@@ -253,6 +292,8 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		s.hideString("This is a message", "tiger.bmp");
+		String message = "This is a test for steganography extraction of a string.";
+		//s.hideString(message, "tiger.bmp");
+		s.extractString("stego_tiger.bmp");
 	}
 }
