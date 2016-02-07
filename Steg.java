@@ -292,8 +292,8 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		String message = "This is a test for steganography extraction of a string.";
-		//s.hideString(message, "tiger.bmp");
-		s.extractString("stego_tiger.bmp");
+		String message = "This is a test for steganography extraction of a string. Oh my god";
+		//s.hideString(message, "lena.bmp");
+		s.extractString("stego_lena.bmp");
 	}
 }
