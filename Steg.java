@@ -87,7 +87,6 @@ public class Steg
 			else
 				bit = 0;
 			
-			//Stores the new byte value
 			int lengthByte = swapLsb(bit, (int)imgBytes[i]);
 			//Sets the byte in the image to the altered byte
 			imgBytes[i] = (byte)lengthByte;
@@ -254,7 +253,6 @@ public class Steg
 		}
 	}
 	
-	//TODO you must write this method
 	/**
 	 * This method swaps the least significant bit with a bit from the filereader
 	 * @param bitToHide - the bit which is to replace the lsb of the byte of the image

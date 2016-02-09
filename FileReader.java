@@ -271,14 +271,31 @@ public class FileReader
 		return (int)file.length()*byteLength;
 	}
 	
-	//TODO YOU MUST FILL IN THIS METHOD
 	/**
 	 * method to populate the list of bits relating to the size of the payload
 	 * 32 bits used to represent the size
 	 */
 	private void populateSizeBits()
 	{
-	
+		 int fileSize = getFileSize();
+		 byte[] sizeBytes = {(byte)(fileSize >>> 24),
+				 (byte)(fileSize >>> 16),
+				 (byte)(fileSize >>> 8),
+				 (byte)(fileSize)
+		 };
+		 
+		 BitSet sizeBits = BitSet.valueOf(sizeBytes);
+		 int bit = 0;
+		 for(int i = 0; i < sizeBits.length(); i++)
+		 {
+			 if (sizeBits.get(i) == true)
+				 bit = 1;
+			 else
+				 bit = 0;
+			 
+			 sbits.add(bit);
+		 }
+		 
 	}
 	
 	//TODO YOU MUST FILL IN THIS METHOD
@@ -288,7 +305,8 @@ public class FileReader
 	 */
 	private void populateExtensionBits()
 	{
-
+		String fileExt = getExtension();
+		byte[] extBits = fileExt.getBytes();
 	}
 	
 
