@@ -290,8 +290,6 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		String message = "This is a test message";
-		//s.hideString(message, "lena.bmp");
-		s.extractString("stego_lena.bmp");
+		FileReader fr = new FileReader("Test.txt");
 	}
 }

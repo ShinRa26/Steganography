@@ -277,6 +277,7 @@ public class FileReader
 	 */
 	private void populateSizeBits()
 	{
+		 sbits = new ArrayList<Integer>();
 		 int fileSize = getFileSize();
 		 byte[] sizeBytes = {(byte)(fileSize >>> 24),
 				 (byte)(fileSize >>> 16),
@@ -298,7 +299,6 @@ public class FileReader
 		 
 	}
 	
-	//TODO YOU MUST FILL IN THIS METHOD
 	/**
 	 * method to populate the list of bits relating to the extension of the payload
 	 * 64 bits used to represent the extension
@@ -306,7 +306,29 @@ public class FileReader
 	private void populateExtensionBits()
 	{
 		String fileExt = getExtension();
-		byte[] extBits = fileExt.getBytes();
+		char[] extChars = fileExt.toCharArray();
+		byte[] extBytes = new byte[8];
+		for(int i = 0; i < extBytes.length; i++)
+		{
+			if(i >= extChars.length)
+				extBytes[i] = (byte)0;
+			else
+				extBytes[i] = (byte)extChars[i];
+		}
+		
+		
+		BitSet bitsExt = BitSet.valueOf(extBytes);
+		int bit = 0;
+		for(int i = 0; i < bitsExt.size(); i++)
+		{
+			if(bitsExt.get(i) == true)
+				bit = 1;
+			else 
+				bit = 0;
+			
+			extBits.add(bit);	
+		}
+		
 	}
 	
 

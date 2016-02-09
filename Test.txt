@@ -1,0 +1,113 @@
+import java.util.*;
+import java.util.concurrent.locks.*;
+import java.util.Stack;
+public class Jobs 
+{
+	private Stack<Integer> myStack;
+	private ReentrantLock jobLock = new ReentrantLock();
+	private Condition enoughJobs = jobLock.newCondition();
+
+	public Jobs()
+	{
+		myStack = new Stack<Integer>();
+	}
+
+	public void addJob(Jobs list, Integer a)
+	{
+		jobLock.lock();
+		try
+		{
+			myStack.push(a);
+			System.out.println("Added job " + a + " to the stack");
+			enoughJobs.signalAll();
+		}
+		finally
+		{
+			jobLock.unlock();
+		}
+	}
+	
+	public void runJobs(Jobs list)
+	{
+		jobLock.lock();
+		try
+		{
+			while(myStack.isEmpty())
+				enoughJobs.await();
+			
+			while(!myStack.isEmpty())
+			{
+				myStack.pop();
+				System.out.println("Job has been run");
+			}
+		}
+		catch(InterruptedException e){}
+		finally
+		{
+			jobLock.unlock();
+		}
+	}
+	
+	public static class AddJobs extends Thread
+	{
+		private Jobs stack;
+		private int n;
+
+		public AddJobs(Jobs jobStack, int n)
+		{
+			this.stack = jobStack;
+			this.n = n;
+		}
+
+		public void run()
+		{
+			try
+			{
+				for(int i = 0; i < n; i++)
+				{
+					Random r = new Random();
+					Integer a = r.nextInt(10);
+					stack.addJob(stack, a);
+					Thread.sleep(20);
+				}
+			}
+			catch(InterruptedException e){}
+		}
+	}
+
+	public static class RunJobs extends Thread
+	{
+		private Jobs stack;
+		
+		public RunJobs(Jobs stack)
+		{
+			this.stack = stack;
+		}
+
+		public void run()
+		{
+			try
+			{
+				stack.runJobs(stack);
+				Thread.sleep(200);
+			}
+			catch(InterruptedException e){}
+		}
+	}
+
+	public static void main(String[] args)
+	{
+		Jobs jobList = new Jobs();
+		AddJobs[] add = new AddJobs[10];
+		RunJobs[] run = new RunJobs[10];
+		for(int i = 0; i < 10; i++)
+		{
+			add[i] = new AddJobs(jobList, 10);
+			run[i] = new RunJobs(jobList);
+			
+			add[i].start();
+			run[i].start();
+		}
+		
+	}
+}
