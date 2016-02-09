@@ -50,7 +50,6 @@ public class Steg
 	written out as a result of the successful hiding operation. 
 	You can assume that the images are all in the same directory as the java files
 	*/
-	//TODO you must write this method
 	public String hideString(String payload, String cover_filename)
 	{
 		//Byte array to store the payload
@@ -113,18 +112,7 @@ public class Steg
 		}
 
 		String outputFileName = "stego_" + cover_filename;
-		
-		//Writes out the altered image
-		try
-		{
-			imgOut = ImageIO.read(new ByteArrayInputStream(imgBytes));
-			ImageIO.write(imgOut, "bmp", new File(outputFileName));
-		}
-		catch(IOException e)
-		{
-			return "Fail";
-		}
-
+		writeImage(imgBytes, outputFileName);
 		
 		return outputFileName;
 	} 
@@ -201,7 +189,7 @@ public class Steg
 		return extracted;
 	}
 
-	//TODO you must write this method
+	//TODO you must write this method TODO TODO TODO TODO FIX THIS
 	/**
 	The hideFile method hides any file (so long as there's enough capacity in the image file) in a cover image
 
@@ -212,8 +200,20 @@ public class Steg
 	*/
 	public String hideFile(String file_payload, String cover_image)
 	{
+		FileReader fr = new FileReader(file_payload);
+		byte[] imgBytes = readImage(cover_image);
+		int payloadLength = fr.getFileSize() + sizeBitsLength + extBitsLength;
+		System.out.println(payloadLength);
+
+		for(int i = START_POS; i < START_POS + payloadLength; i++)
+		{
+			swapLsb(fr.getNextBit(), (int)imgBytes[i]);
+		}
 		
-		return "";
+		String outputFileName = "file_stego_" + cover_image;
+		writeImage(imgBytes, outputFileName);
+		
+		return outputFileName;
 	}
 
 	//TODO you must write this method
@@ -226,7 +226,8 @@ public class Steg
 	*/
 	public String extractFile(String stego_image)
 	{
-	
+		byte[] stegBytes = readImage(stego_image);
+		
 		return "";
 	}
 
@@ -249,6 +250,26 @@ public class Steg
 		catch(IOException e)
 		{
 			System.out.println("No file");
+			return null;
+		}
+	}
+	
+	/**
+	 * Method to write out the new steganography image
+	 * @param img the byte array containing the bytes of the image
+	 * @param outputName the name to call the output file
+	 * @return the new altered image.
+	 */
+	public BufferedImage writeImage(byte[] img, String outputName)
+	{
+		try
+		{
+			imgOut = ImageIO.read(new ByteArrayInputStream(img));
+			ImageIO.write(imgOut, "bmp", new File(outputName));
+			return imgOut;
+		}
+		catch(IOException e)
+		{
 			return null;
 		}
 	}
@@ -290,6 +311,6 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		FileReader fr = new FileReader("Test.txt");
+		
 	}
 }

@@ -40,7 +40,7 @@ public class FileReader
 	/**
 	 * List to hold the bits which represent the size of the file  
 	 */
-	private List<Integer> sbits;
+	private List<Integer> sBits;
 	/**
 	 * List to hold the bits representing the extension
 	 */
@@ -277,8 +277,9 @@ public class FileReader
 	 */
 	private void populateSizeBits()
 	{
-		 sbits = new ArrayList<Integer>();
-		 int fileSize = getFileSize();
+		 sBits = new ArrayList<Integer>();
+		 int fileSize = getFileSize()/8;
+		 //System.out.println(fileSize);
 		 byte[] sizeBytes = {(byte)(fileSize >>> 24),
 				 (byte)(fileSize >>> 16),
 				 (byte)(fileSize >>> 8),
@@ -294,9 +295,10 @@ public class FileReader
 			 else
 				 bit = 0;
 			 
-			 sbits.add(bit);
+			 sBits.add(bit);
 		 }
 		 
+		 sBitsIt = sBits.iterator();
 	}
 	
 	/**
@@ -329,6 +331,7 @@ public class FileReader
 			extBits.add(bit);	
 		}
 		
+		extBitsIt = extBits.iterator();
 	}
 	
 
@@ -346,7 +349,7 @@ public class FileReader
 	 */
 	public List<Integer> getSizeBits()
 	{
-		return sbits;
+		return sBits;
 		
 	}
 	
