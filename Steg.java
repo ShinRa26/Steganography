@@ -278,11 +278,11 @@ public class Steg
 		}
 		
 		byte[] extBytes = extBits.toByteArray();
-		char[] extChars = new char[extBitsLength/8];
+		char[] extChars = new char[extBytes.length];
 		for(int i = 0; i < extChars.length; i++)
 		{
 			if(i >= extBytes.length)
-				extChars[i] = 0;
+				break;
 			else
 				extChars[i] = (char)extBytes[i];
 		}
@@ -293,24 +293,25 @@ public class Steg
 		/**
 		 * Gets the payload as a byte array; Stored in payloadBytes
 		 */
-		BitSet payloadBits = new BitSet();
-		bit = 0; counter = 0;
-		for(int i = upToExt; i < payloadSize; i++)
-		{
-			if(payloadBits.get(counter) == true)
-				bit = 1; 
-			else
-				bit = 0;
-			
-			int lsb = getLSB(stegBytes[i]);
-			if(bit != lsb)
-				payloadBits.flip(counter);
-			
-			counter++;
-		}
-		byte[] payloadBytes = payloadBits.toByteArray();
-		String outputFileName = "Extracted_File" + fileExt;
 		
+		
+		String outputFileName = "Extracted_File" + fileExt;
+		/*
+		try
+		{
+			FileOutputStream output = new FileOutputStream(new File(outputFileName));
+			output.write(payloadBytes);
+			output.close();
+			System.out.println("Extraction successful. File written out as: " + outputFileName);
+			return outputFileName;
+		}
+		catch(IOException e)
+		{
+			String failed = "Caught IOException: Extraction Failed";
+			System.out.println(failed);
+			return failed;
+		}
+		*/
 		return "";
 	}
 
@@ -376,6 +377,17 @@ public class Steg
 		return byt;
 	}
 	
+	public int swapMsb(int bitToHide, int byt)
+	{
+		if(bitToHide != (byt&0x8))
+		{
+			if(bitToHide == 0)
+				byt&=~0x8;
+			else
+				byt |= 0x8;
+		}
+		return byt;
+	}
 	/**
 	 * Method to get the LSB of a byte
 	 * @param byteIn the byte 
