@@ -202,7 +202,10 @@ public class Steg
 	{
 		FileReader fr = new FileReader(file_payload);
 		byte[] imgBytes = readImage(cover_image);
+		System.out.println("Image size Bytes:  " + imgBytes.length);
+		System.out.println( "File Size: " + fr.getFileSize());
 		int payloadLength = fr.getFileSize() + sizeBitsLength + extBitsLength;
+		System.out.println("Payload size: " + payloadLength);
 		
 		
 		for(int i = START_POS; i < START_POS + payloadLength; i++)
@@ -228,83 +231,24 @@ public class Steg
 	public String extractFile(String stego_image)
 	{
 		byte[] stegBytes = readImage(stego_image);
-		int startPlusSize = START_POS + sizeBitsLength;
-		int startPlusSizeExt = startPlusSize + extBitsLength;
 		
 		/**
 		 * Gets the payload size in bits; stored in payloadLength 
 		 */
-		BitSet sizeBits = new BitSet();
-		int bit = 0;
-		int counter = 0;
-		for(int i = START_POS; i < startPlusSize; i++)
-		{
-			if (sizeBits.get(counter) == true)
-				bit = 1;
-			else 
-				bit = 0;
-			
-			int lsb = getLSB(stegBytes[i]);
-			if(bit != lsb)
-				sizeBits.flip(counter);
-			
-			counter++;
-		}
-		byte[] sizeBytes = sizeBits.toByteArray();
-		int payloadSize = ((sizeBytes[0] & 0xFF) << 24) | ((sizeBytes[1] & 0xFF) << 16) |
-		          ((sizeBytes[2] & 0xFF) << 8)  | (sizeBytes[3] & 0xFF);
 		
 		
 		/**
 		 * Gets the payload's file extention as a string; stored in fileExt.
 		 */
-		BitSet extBits = new BitSet();
-		bit = 0;
-		counter = 0;
-		for(int i = startPlusSize; i < startPlusSizeExt; i++)
-		{
-			if(extBits.get(counter) == true)
-				bit = 1;
-			else
-				bit = 0;
-			
-			int lsb = getLSB(stegBytes[i]);
-			if (bit != lsb)
-				extBits.flip(counter);
 
-			counter++;
-		}
-		byte[] extBytes = extBits.toByteArray();
-		char[] extChars = new char[extBitsLength/8];
-		for(int i = 0; i < extChars.length; i++)
-		{
-			if( i >= extBytes.length)
-				extChars[i] = 0;
-			else
-				extChars[i] = (char)extBytes[i];
-		}
-		String fileExt = new String(extChars);
+		
 		
 		/**
 		 * Gets the payload as a byte array; Stored in payloadBytes
 		 */
-		BitSet payloadBits = new BitSet();
-		bit = 0;
-		counter = 0;
-		for(int i = startPlusSizeExt; i < startPlusSizeExt + payloadSize; i++)
-		{
-			if(payloadBits.get(counter) == true)
-				bit = 1;
-			else
-				bit = 0;
-			
-			int lsb = getLSB(stegBytes[i]);
-			if(bit != lsb)
-				payloadBits.flip(counter);
-			
-			counter++;
-		}
+		
 		return "";
+			
 	}
 
 	/**
@@ -346,6 +290,7 @@ public class Steg
 		}
 		catch(IOException e)
 		{
+			System.out.println("Error: Cannot create file");
 			return null;
 		}
 	}
@@ -378,7 +323,6 @@ public class Steg
 		int lsb = byteIn&0x1;
 		return lsb;
 	}
-
 	
 	/**
 	 * Main Method to call the program 
@@ -387,7 +331,7 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		//s.hideFile("Test.txt", "lena.bmp");
+		//s.hideFile("Testpdf.pdf", "lena.bmp");
 		s.extractFile("file_stego_lena.bmp");
 		
 	}
