@@ -268,7 +268,7 @@ public class FileReader
 	 */
 	public int getFileSize()
 	{
-		return (int)file.length()*byteLength;
+		return (int)file.length();
 	}
 	
 	/**
@@ -278,7 +278,7 @@ public class FileReader
 	private void populateSizeBits()
 	{
 		 sBits = new ArrayList<Integer>();
-		 int fileSize = getFileSize()/8;
+		 int fileSize = getFileSize();
 		 //System.out.println(fileSize);
 		 byte[] sizeBytes = {(byte)(fileSize >>> 24),
 				 (byte)(fileSize >>> 16),
