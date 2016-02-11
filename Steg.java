@@ -34,6 +34,11 @@ public class Steg
 	 */
 	private BufferedImage imgOut;
 
+	/**
+	 * Instance variable to hold the Filereader object
+	 */
+	private FileReader fr;
+	
 	
 	/**
 	* Default constructor to create a steg object, doesn't do anything - so we actually don't need to declare it explicitly. Oh well. 
@@ -200,18 +205,20 @@ public class Steg
 	*/
 	public String hideFile(String file_payload, String cover_image)
 	{
-		FileReader fr = new FileReader(file_payload);
+		fr = new FileReader(file_payload);
 		byte[] imgBytes = readImage(cover_image);
 		//System.out.println("Image size Bytes:  " + imgBytes.length);
 		System.out.println( "File Size: " + fr.getFileSize());
 		int payloadLength = fr.getFileSize() + sizeBitsLength + extBitsLength;
 		System.out.println("Payload size: " + payloadLength);
 		
-		
 		for(int i = START_POS; i < START_POS + payloadLength; i++)
 		{
-			int newByte = swapLsb(fr.getNextBit(), (int)imgBytes[i]);
-			imgBytes[i] = (byte)newByte;
+			if(fr.hasNextBit())
+			{
+				int newByte = swapLsb(fr.getNextBit(), (int)imgBytes[i]);
+				imgBytes[i] = (byte)newByte;
+			}
 		}
 		
 		String outputFileName = "file_stego_" + cover_image;
@@ -255,7 +262,7 @@ public class Steg
 		byte[] sizeBytes = sizeBits.toByteArray();
 		int payloadSize = ((sizeBytes[0] & 0xFF) << 24) | ((sizeBytes[1] & 0xFF) << 16) |
 				((sizeBytes[2] &0xFF) << 8) | ((sizeBytes[3] & 0xFF));
-		System.out.println("Payload size: " + payloadSize);
+		System.out.println("Payload size: " + payloadSize + "\nPayload + exts: " + (payloadSize + upToExt));
 		
 		
 		/**
@@ -294,14 +301,33 @@ public class Steg
 		 * Gets the payload as a byte array; Stored in payloadBytes
 		 */
 		
-		
 		String outputFileName = "Extracted_File" + fileExt;
-		/*
+		BitSet payloadBits = new BitSet();
+		counter = 0; bit = 0;
+		for(int i = upToExt; i < upToExt + payloadSize*byteLength; i++)
+		{
+			if(payloadBits.get(counter) == true)
+				bit = 1;
+			else
+				bit = 0;
+			
+			int lsb = getLSB(stegBytes[i]);
+			if(bit != lsb)
+				payloadBits.flip(counter);
+			
+			counter++;
+		}
+		byte[] payloadBytes = payloadBits.toByteArray();
+		for(int i : payloadBytes)
+			System.out.println(i);
+		
+		
 		try
 		{
 			FileOutputStream output = new FileOutputStream(new File(outputFileName));
-			output.write(payloadBytes);
-			output.close();
+			BufferedOutputStream bo = new BufferedOutputStream(output);
+			bo.write(payloadBytes);
+			bo.close();
 			System.out.println("Extraction successful. File written out as: " + outputFileName);
 			return outputFileName;
 		}
@@ -311,8 +337,8 @@ public class Steg
 			System.out.println(failed);
 			return failed;
 		}
-		*/
-		return "";
+		
+		//return "";
 	}
 
 	/**
