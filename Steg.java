@@ -207,26 +207,34 @@ public class Steg
 	{
 		fr = new FileReader(file_payload);
 		byte[] imgBytes = readImage(cover_image);
-		//System.out.println("Image size Bytes:  " + imgBytes.length);
-		System.out.println( "File Size: " + fr.getFileSize());
+		System.out.println("Image size Bytes:  " + imgBytes.length);
 		int payloadLength = fr.getFileSize() + sizeBitsLength + extBitsLength;
 		System.out.println("Payload size: " + payloadLength);
 		
-		for(int i = START_POS; i < START_POS + payloadLength; i++)
+		if(payloadLength <= imgBytes.length)
 		{
-			if(fr.hasNextBit() == true)
+			for(int i = START_POS; i < START_POS + payloadLength; i++)
 			{
-				int newByte = swapLsb(fr.getNextBit(), (int)imgBytes[i]);
-				imgBytes[i] = (byte)newByte;
+				if(fr.hasNextBit() == true)
+				{
+					int newByte = swapLsb(fr.getNextBit(), (int)imgBytes[i]);
+					imgBytes[i] = (byte)newByte;
+				}
+				else
+					break;
 			}
-			else
-				break;
+			
+			String outputFileName = "file_stego_" + cover_image;
+			writeImage(imgBytes, outputFileName);
+			
+			System.out.println("Hiding Successful. Image written out as " + outputFileName);
+			return outputFileName;
 		}
-		
-		String outputFileName = "file_stego_" + cover_image;
-		writeImage(imgBytes, outputFileName);
-		
-		return outputFileName;
+		else
+		{
+			System.out.println("Error: File payload is too large for this file");
+			return "Fail";
+		}
 	}
 
 	//TODO you must write this method
@@ -378,6 +386,7 @@ public class Steg
 		{
 			imgOut = ImageIO.read(new ByteArrayInputStream(img));
 			ImageIO.write(imgOut, "bmp", new File(outputName));
+			System.out.println("Image written successfully");
 			return imgOut;
 		}
 		catch(IOException e)
@@ -434,7 +443,7 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		//s.hideFile("Test2.txt", "lena.bmp");
+		//s.hideFile("Test.txt", "lena.bmp");
 		s.extractFile("file_stego_lena.bmp");
 		
 	}

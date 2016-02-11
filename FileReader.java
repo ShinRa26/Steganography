@@ -268,7 +268,7 @@ public class FileReader
 	 */
 	public int getFileSize()
 	{
-		return (int)file.length();
+		return (int)file.length()*8;
 	}
 	
 	/**
