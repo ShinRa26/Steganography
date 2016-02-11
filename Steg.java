@@ -214,11 +214,13 @@ public class Steg
 		
 		for(int i = START_POS; i < START_POS + payloadLength; i++)
 		{
-			if(fr.hasNextBit())
+			if(fr.hasNextBit() == true)
 			{
 				int newByte = swapLsb(fr.getNextBit(), (int)imgBytes[i]);
 				imgBytes[i] = (byte)newByte;
 			}
+			else
+				break;
 		}
 		
 		String outputFileName = "file_stego_" + cover_image;
@@ -304,7 +306,7 @@ public class Steg
 		String outputFileName = "Extracted_File" + fileExt;
 		BitSet payloadBits = new BitSet();
 		counter = 0; bit = 0;
-		for(int i = upToExt; i < upToExt + payloadSize*byteLength; i++)
+		for(int i = upToExt; i < upToExt + payloadSize; i++)
 		{
 			if(payloadBits.get(counter) == true)
 				bit = 1;
@@ -318,8 +320,8 @@ public class Steg
 			counter++;
 		}
 		byte[] payloadBytes = payloadBits.toByteArray();
-		for(int i : payloadBytes)
-			System.out.println(i);
+		//for(int i : payloadBytes)
+			//System.out.println(i);
 		
 		
 		try
