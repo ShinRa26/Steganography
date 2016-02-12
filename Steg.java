@@ -76,50 +76,54 @@ public class Steg
 		
 		//Array to store the bytes of the image
 		byte[] imgBytes = readImage(cover_filename);
-		
-		//Variables to hold the value of the bit of the BitSets and counter for iterating through the BitSets
-		int counter = 0;
-		int bit = 0;
-		//Loop to hide the length of the payload in the first 4 bytes of the picture
-		int payloadStart = START_POS + sizeBitsLength;
-		for(int i = START_POS; i < START_POS + sizeBitsLength; i++)
+		if(payloadLength <= imgBytes.length - START_POS)
 		{
-			//As BitSets hold the values of the bits as booleans, this converts the boolean to an integer value 
-			//(1 or 0 for true or false respectively)
-			if(lengthBits.get(counter) == true)
-				bit = 1;
-			else
-				bit = 0;
+			//Variables to hold the value of the bit of the BitSets and counter for iterating through the BitSets
+			int counter = 0;
+			int bit = 0;
+			//Loop to hide the length of the payload in the first 4 bytes of the picture
+			int payloadStart = START_POS + sizeBitsLength;
+			for(int i = START_POS; i < START_POS + sizeBitsLength; i++)
+			{
+				//As BitSets hold the values of the bits as booleans, this converts the boolean to an integer value 
+				//(1 or 0 for true or false respectively)
+				if(lengthBits.get(counter) == true)
+					bit = 1;
+				else
+					bit = 0;
+				
+				int lengthByte = swapLsb(bit, (int)imgBytes[i]);
+				//Sets the byte in the image to the altered byte
+				imgBytes[i] = (byte)lengthByte;
+				//Increments the BitSet counter
+				counter++;
+			}
 			
-			int lengthByte = swapLsb(bit, (int)imgBytes[i]);
-			//Sets the byte in the image to the altered byte
-			imgBytes[i] = (byte)lengthByte;
-			//Increments the BitSet counter
-			counter++;
+			//resets the counter for the BitSets
+			counter = 0;
+			//resets the bit for the bitset
+			bit = 0;
+			//Loop to hide the payload after the 4 length bytes
+			for(int i = payloadStart; i < payloadStart + payloadBits.length(); i++)
+			{
+				if(payloadBits.get(counter) == true)
+					bit = 1;
+				else
+					bit = 0;
+				
+				int newByte = swapLsb(bit, (int)imgBytes[i]);
+				
+				imgBytes[i] = (byte)newByte;
+				counter++;
+			}
+	
+			String outputFileName = "stego_" + cover_filename;
+			writeImage(imgBytes, outputFileName);
+			
+			return outputFileName;
 		}
-		
-		//resets the counter for the BitSets
-		counter = 0;
-		//resets the bit for the bitset
-		bit = 0;
-		//Loop to hide the payload after the 4 length bytes
-		for(int i = payloadStart; i < payloadStart + payloadBits.length(); i++)
-		{
-			if(payloadBits.get(counter) == true)
-				bit = 1;
-			else
-				bit = 0;
-			
-			int newByte = swapLsb(bit, (int)imgBytes[i]);
-			
-			imgBytes[i] = (byte)newByte;
-			counter++;
-		}
-
-		String outputFileName = "stego_" + cover_filename;
-		writeImage(imgBytes, outputFileName);
-		
-		return outputFileName;
+		else
+			return "Failed. Payload length is too long.";
 	} 
 	
 	/**
@@ -162,9 +166,8 @@ public class Steg
 		int payloadLength = ((lengthBytes[0] & 0xFF) << 24) | ((lengthBytes[1] & 0xFF) << 16) |
 		          ((lengthBytes[2] & 0xFF) << 8)  | (lengthBytes[3] & 0xFF);
 		
-		
-		System.out.println(payloadLength);
-		//Stores teh start point for the extraction to begin
+
+		//Stores the start point for the extraction to begin
 		int extractStart = START_POS + sizeBitsLength;
 		counter = 0; //Restarts the counter for the bitset
 		bit = 0; //resets the value of the bit
@@ -211,7 +214,7 @@ public class Steg
 		int payloadLength = fr.getFileSize() + sizeBitsLength + extBitsLength;
 		System.out.println("Payload size: " + payloadLength);
 		
-		if(payloadLength <= imgBytes.length)
+		if(payloadLength <= imgBytes.length - START_POS)
 		{
 			for(int i = START_POS; i < START_POS + payloadLength; i++)
 			{
@@ -413,18 +416,7 @@ public class Steg
 		}
 		return byt;
 	}
-	
-	public int swapMsb(int bitToHide, int byt)
-	{
-		if(bitToHide != (byt&0x8))
-		{
-			if(bitToHide == 0)
-				byt&=~0x8;
-			else
-				byt |= 0x8;
-		}
-		return byt;
-	}
+
 	/**
 	 * Method to get the LSB of a byte
 	 * @param byteIn the byte 
@@ -443,8 +435,8 @@ public class Steg
 	public static void main(String[] args)
 	{
 		Steg s = new Steg();
-		//s.hideFile("Test.txt", "lena.bmp");
-		s.extractFile("file_stego_lena.bmp");
+		//s.hideString("Hello there", "lena.bmp");
+		s.extractString("stego_lena.bmp");
 		
 	}
 }
